@@ -39,3 +39,7 @@ class Vector2 {
         return this.x * vector1.x + this.y * vector1.y
     }
 }
+
+namespace SpriteSheet {
+    export const tileIndicatorImage: Image = assets.image`tileIndicator`
+}
