@@ -41,6 +41,7 @@ function createCursor() : void {
 
 function createLevel() : void {
     scene.setTileMapLevel(assets.tilemap`test`)
+    scene.setBackgroundColor(7)
     // mousePositionCameraController()
     // keyboardCameraController()
     mouseDragController()
