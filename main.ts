@@ -17,6 +17,10 @@ namespace OverlapEvents {
 }
 
 let cursorSprite: Sprite = null
+let currentMapPath: tiles.Location[]
+let isValidTile: boolean = false
+let enemyPath: tiles.Location[] = null
+let waveStart: boolean = true
 
 onStart()
 
