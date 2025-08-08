@@ -17,6 +17,18 @@ class Vector2 {
     static ZERO() {
         return new Vector2(0, 0)
     }
+    static UP(): Vector2 {
+        return new Vector2(0, -1)
+    }
+    static RIGHT(): Vector2 {
+        return new Vector2(1, 0)
+    }
+    static DOWN(): Vector2 {
+        return new Vector2(0, 1)
+    }
+    static LEFT(): Vector2 {
+        return new Vector2(-1, 0)
+    }
     length(): number {
         let vector: Vector2 = Vector2.ZERO()
         return spriteutils.distanceBetween(this, vector)

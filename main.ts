@@ -95,27 +95,81 @@ function validTileCheck(): boolean {
 }
 function createLevel() : void {
     scene.setTileMapLevel(assets.tilemap`test`)
-    scene.setBackgroundColor(7)
+    scene.setBackgroundColor(8)
     // mousePositionCameraController()
     // keyboardCameraController()
-    mouseDragController()
+    cameraController()
 }
 
+// This doesn't work! :(
+function constructTilePath(): tiles.Location[] {
+    let startingTileLocation: tiles.Location[] = tiles.getTilesByType(assets.tile`spawnTile`)
+    let finishTileLocation: tiles.Location[] = tiles.getTilesByType(assets.tile`finishTile`)
+    let path: tiles.Location[] = scene.aStar(startingTileLocation[0], finishTileLocation[0], assets.tile`pathTile`)
 
-function mouseDragController() : void {
+
+    return path
+}
+
+function createEnemy() {
+
+    let enemySprite: Sprite = sprites.create(assets.image`enemyImage`, SpriteKind.Enemy)
+    let currentDirection: Vector2 = Vector2.ZERO()
+    tiles.placeOnRandomTile(enemySprite, assets.tile`spawnTile`)
+    let enemyStatusBar: StatusBarSprite = statusbars.create(10, 4, StatusBarKind.Health)
+    enemyStatusBar.attachToSprite(enemySprite)
+    enemyStatusBar.value = 100
+    let enemyDuration: number = 750
+
+    spriteutils.onSpriteUpdateInterval(enemySprite, enemyDuration, function (sprite: Sprite): void {
+        let targetDirection: Vector2 = Vector2.ZERO()
+        let spriteTileLocation: Vector2 = new Vector2(sprite.tilemapLocation().column, sprite.tilemapLocation().row)
+        let directionVectors: Vector2[] = [
+            Vector2.UP(),
+            Vector2.RIGHT(),
+            Vector2.DOWN(),
+            Vector2.LEFT()
+        ]
+        for (let direction of directionVectors) {
+            if (direction.compare(currentDirection.scale(-1))) {
+                continue
+            }
+            targetDirection = spriteTileLocation.add(direction)
+            if (!tileUtil.tileIs(tileUtil.currentTilemap(), targetDirection.toTileLocation(), assets.image`blankImage`)) {
+                currentDirection = direction
+                break
+            }
+        }
+
+        spriteutils.moveTo(sprite, targetDirection.toTileLocation(), enemyDuration, false)
+
+    })
+
+
+}
+
+forever(function (): void {
+    if (!waveStart) {
+        return
+    }
+    createEnemy()
+    pause(5000)
+})
+
+function cameraController(): void {
     let cameraPosition: Vector2 = new Vector2(scene.cameraProperty(CameraProperty.X), scene.cameraProperty(CameraProperty.Y))
     const screenSize: Vector2 = new Vector2(scene.screenWidth(), scene.screenHeight())
     const tileMapSize: Vector2 = new Vector2(game.currentScene().tileMap.areaWidth(), game.currentScene().tileMap.areaHeight())
     const cameraSpeed: number = 0.2
     let startingPosition: Vector2 = Vector2.ZERO()
 
-    browserEvents.MouseRight.onEvent(browserEvents.MouseButtonEvent.Pressed, function(x: number, y:number) { 
+    browserEvents.MouseRight.onEvent(browserEvents.MouseButtonEvent.Pressed, function (x: number, y: number) {
         startingPosition = getGlobalMousePoisition()
     })
-    forever(function() { 
+    forever(function (): void {
         let displacement: Vector2 = Vector2.ZERO()
-        
-        if(browserEvents.MouseRight.isPressed()){
+        // right click and drag to move the camera
+        if (browserEvents.MouseRight.isPressed()) {
             displacement = getGlobalMousePoisition().subtract(startingPosition)
         }
         cameraPosition = cameraPosition.add(displacement.scale(cameraSpeed))
@@ -125,11 +179,23 @@ function mouseDragController() : void {
             Math.clamp(screenSize.y / 2, tileMapSize.y, cameraPosition.y)
         )
 
+        // Use arrow keys to move the camera
+        if (controller.up.isPressed()) {
+            cameraPosition.y -= cameraSpeed * game.getDeltaTime()
+        } else if (controller.down.isPressed()) {
+            cameraPosition.y += cameraSpeed * game.getDeltaTime()
+        }
+        if (controller.left.isPressed()) {
+            cameraPosition.x -= cameraSpeed * game.getDeltaTime()
+        } else if (controller.right.isPressed()) {
+            cameraPosition.x += cameraSpeed * game.getDeltaTime()
+        }
+
         scene.centerCameraAt(
             cameraPosition.x,
             cameraPosition.y
         )
-        
+
     })
 }
 
