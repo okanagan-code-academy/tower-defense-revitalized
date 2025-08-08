@@ -10,7 +10,8 @@
         "color-coded-tilemap": "*",
         "arcade-tile-util": "github:microsoft/arcade-tile-util#v1.2.0",
         "arcade-minimap": "github:microsoft/arcade-minimap#v0.6.1",
-        "pxt-status-bar": "github:jwunderl/pxt-status-bar#v0.4.2"
+        "pxt-status-bar": "github:jwunderl/pxt-status-bar#v0.4.2",
+        "arcade-tilemap-a-star": "github:jwunderl/arcade-tilemap-a-star#v0.4.0"
     },
     "files": [
         "main.ts",
