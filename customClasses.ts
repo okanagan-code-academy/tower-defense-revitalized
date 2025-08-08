@@ -73,3 +73,86 @@ namespace SpriteSheet {
         sprites.projectile.explosion4,
     ]
 }
+
+
+class Turret {
+    image: Image
+    spriteKind: number = SpriteKind.Unused
+    parent: Sprite
+    sightRange: number
+
+
+    constructor(image: Image, parent: Sprite, range: number) {
+        this.image = image
+        this.parent = parent
+        this.sightRange = range
+    }
+    createSprite(): Sprite {
+        return null
+    }
+}
+
+class ProjectileTurret extends Turret {
+    projectileImage: Image
+    speed: number
+    fireRate: number
+    magazineCapacity: number
+    reloadDuration: number
+
+    constructor(image: Image, parent: Sprite, projectileImage: Image, speed: number, fireRate: number, magazineCapacity: number, reloadDuration: number, range: number) {
+        super(image, parent, range)
+        this.projectileImage = projectileImage
+        this.speed = speed
+        this.fireRate = fireRate
+        this.magazineCapacity = magazineCapacity
+        this.reloadDuration = reloadDuration
+
+    }
+    createSprite(): Sprite {
+        let sprite: Sprite = sprites.create(this.image, this.spriteKind)
+
+
+        return sprite
+    }
+
+}
+
+class Projectile {
+    image: Image
+    health: number
+
+    constructor(image: Image, health: number = 0) {
+        this.image = image
+        this.health = health
+    }
+
+    shootProjectile(sprite: Sprite, angle: number, speed: number): Sprite {
+        let projectile: Sprite = sprites.create(this.image, SpriteKind.Projectile)
+        sprites.setDataNumber(projectile, "health", this.health)
+        projectile.setPosition(sprite.x, sprite.y)
+        spriteutils.setVelocityAtAngle(projectile, angle, speed)
+        return projectile
+    }
+}
+
+class ExplosiveProjectile extends Projectile {
+    size: number = 4
+
+    shootProjectile(sprite: Sprite, angle: number, speed: number): Sprite {
+        let projectile: Sprite = super.shootProjectile(sprite, angle, speed)
+        projectile.onDestroyed(function (): void {
+            let position: Vector2 = new Vector2(projectile.x, projectile.y)
+            createExplosion(position, this.size)
+        })
+        return projectile
+
+    }
+}
+
+function createExplosion(target: Vector2, size: number): void {
+    const intervalDuration: number = 50
+    let vfxSprite: Sprite = sprites.create(assets.image`blankImage`, SpriteKind.Unused)
+    vfxSprite.setPosition(target.x, target.y)
+    animation.runImageAnimation(vfxSprite, SpriteSheet.explosion, intervalDuration, false)
+    vfxSprite.lifespan = intervalDuration * SpriteSheet.explosion.length
+}
