@@ -1,7 +1,7 @@
-namespace userconfig {
-    export const ARCADE_SCREEN_WIDTH = 320
-    export const ARCADE_SCREEN_HEIGHT = 240
-}
+// namespace userconfig {
+//     export const ARCADE_SCREEN_WIDTH = 320
+//     export const ARCADE_SCREEN_HEIGHT = 240
+// }
 
 class Vector2 {
     public x: number = 0
