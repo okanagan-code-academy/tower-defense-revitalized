@@ -66,4 +66,10 @@ namespace SpriteSheet {
         assets.image`blankImage`,
         assets.image`blankImage`,
     ]
+    export const explosion: Image[] = [
+        sprites.projectile.explosion1,
+        sprites.projectile.explosion2,
+        sprites.projectile.explosion3,
+        sprites.projectile.explosion4,
+    ]
 }
