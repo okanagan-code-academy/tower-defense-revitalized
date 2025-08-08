@@ -112,7 +112,6 @@ function constructTilePath(): tiles.Location[] {
 }
 
 function createEnemy() {
-
     let enemySprite: Sprite = sprites.create(assets.image`enemyImage`, SpriteKind.Enemy)
     let currentDirection: Vector2 = Vector2.ZERO()
     tiles.placeOnRandomTile(enemySprite, assets.tile`spawnTile`)
