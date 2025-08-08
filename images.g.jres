@@ -24,6 +24,21 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "blankImage"
     },
+    "image7": {
+        "data": "hwQQABAAAAB3d3d3d3d3d1dVVVVVVVV1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1V1VVVVVVVXV3d3d3d3d3dw==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "tileIndicatorTransition1"
+    },
+    "image8": {
+        "data": "hwQQABAAAAB3d3d3d3d3d1dVVVVVVVV1V0RERERERHVXBAAAAABAdVcEAAAAAEB1VwQAAAAAQHVXBAAAAABAdVcEAAAAAEB1VwQAAAAAQHVXBAAAAABAdVcEAAAAAEB1VwQAAAAAQHVXBAAAAABAdVdERERERER1V1VVVVVVVXV3d3d3d3d3dw==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "tileIndicatorTransition2"
+    },
+    "image6": {
+        "data": "hwQQABAAAAB3d3d3d3d3d1dVVVVVVVV1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1VwAAAAAAAHVXAAAAAAAAdVcAAAAAAAB1V1VVVVVVVXV3d3d3d3d3dw==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "tileIndicatorTransition1"
+    },
     "*": {
         "mimeType": "image/x-mkcd-f4",
         "dataEncoding": "base64",

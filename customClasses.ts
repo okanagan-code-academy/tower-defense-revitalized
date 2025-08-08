@@ -16,6 +16,9 @@ class Vector2 {
         let vector: Vector2 = Vector2.ZERO()
         return spriteutils.distanceBetween(this, vector)
     }
+    angle(): number {
+        return Math.atan2(this.y, this.x)
+    }
     add(vector2: Vector2): Vector2 {
         return new Vector2(this.x + vector2.x, this.y + vector2.y)
     }
@@ -38,8 +41,29 @@ class Vector2 {
     dot(vector1: Vector2): number {
         return this.x * vector1.x + this.y * vector1.y
     }
+    compare(vector1: Vector2): boolean {
+        return (this.x == vector1.x) && (this.y == vector1.y)
+    }
+    toTileLocation(): tiles.Location {
+        /**
+        * A niche case to convert a Vector2 to Tile Location
+        * @param x correpsonds with a column
+        * @param y correpsonds with a row
+        */
+        return tiles.getTileLocation(this.x, this.y)
+    }
 }
 
 namespace SpriteSheet {
     export const tileIndicatorImage: Image = assets.image`tileIndicator`
+    export const tileIndicatorValidAnimation: Image[] = [
+        assets.image`tileIndicator`,
+        assets.image`tileIndicatorTransition1`,
+        assets.image`tileIndicatorTransition2`,
+        assets.image`tileIndicatorTransition1`,
+        assets.image`tileIndicator`,
+        assets.image`blankImage`,
+        assets.image`blankImage`,
+        assets.image`blankImage`,
+    ]
 }

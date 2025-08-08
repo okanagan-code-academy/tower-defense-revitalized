@@ -40,21 +40,59 @@ function createTowerMenu(): void {
     })
 }
 
-function createCursor() : void {
+function createCursor(): void {
     cursorSprite = sprites.create(assets.image`cursor`, SpriteKind.Cursor)
+    cursorSprite.z = 1000
+    sprites.setDataSprite(cursorSprite, "currentTower", null)
+
     let currentTileIndicatorSprite: Sprite = sprites.create(SpriteSheet.tileIndicatorImage, SpriteKind.Indicator)
+    animation.runImageAnimation(currentTileIndicatorSprite, SpriteSheet.tileIndicatorValidAnimation, 150, true)
+
     sprites.setDataSprite(cursorSprite, "currentTileIndicator", currentTileIndicatorSprite)
-    forever(function(){
+
+    forever(function (): void {
+
+        currentTileIndicatorSprite.setFlag(SpriteFlag.Invisible, !isValidTile)
+
         cursorSprite.setPosition(scene.cameraProperty(CameraProperty.Left) + browserEvents.mouseX(), scene.cameraProperty(CameraProperty.Top) + browserEvents.mouseY())
         tiles.placeOnTile(currentTileIndicatorSprite, cursorSprite.tilemapLocation())
-        if(tiles.tileAtLocationEquals(cursorSprite.tilemapLocation(), assets.image`blankImage`)) {
-            currentTileIndicatorSprite.setFlag(SpriteFlag.Invisible, false)
+        isValidTile = validTileCheck()
+
+
+        let towerSprite: Sprite = sprites.readDataSprite(cursorSprite, "currentTower")
+        if (!towerSprite) {
+            return
+        }
+
+        if (browserEvents.MouseLeft.isPressed()) {
+            towerSprite.setPosition(cursorSprite.x, cursorSprite.y)
+        } else if (isValidTile) {
+            tiles.placeOnTile(towerSprite, cursorSprite.tilemapLocation())
+            towerSprite.setKind(SpriteKind.Tower)
+            sprites.setDataSprite(cursorSprite, "currentTower", null)
         } else {
-            currentTileIndicatorSprite.setFlag(SpriteFlag.Invisible, true)
+            towerSprite.destroy(effects.fire, 250)
         }
     })
 }
 
+function validTileCheck(): boolean {
+    let currentTileIndicatorSprite: Sprite = sprites.readDataSprite(cursorSprite, "currentTileIndicator")
+
+    if (!tiles.tileAtLocationEquals(cursorSprite.tilemapLocation(), assets.image`blankImage`)) {
+        return false
+    }
+    for (let tower of sprites.allOfKind(SpriteKind.Tower)) {
+        let cursorTileLocation: Vector2 = new Vector2(cursorSprite.tilemapLocation().column, cursorSprite.tilemapLocation().row)
+        let towerTileLocation: Vector2 = new Vector2(tower.tilemapLocation().column, tower.tilemapLocation().row)
+        if (cursorTileLocation.compare(towerTileLocation)) {
+            return false
+        }
+    }
+
+
+    return true
+}
 function createLevel() : void {
     scene.setTileMapLevel(assets.tilemap`test`)
     scene.setBackgroundColor(7)
