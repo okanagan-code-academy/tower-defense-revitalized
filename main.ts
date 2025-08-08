@@ -30,13 +30,14 @@ function onStart() : void {
     createTowerMenu()
 }
 
-function createTowerMenu() : void {
-    let tileSprite: Sprite =sprites.create(assets.image`whiteBackground`, SpriteKind.Unused)
+function createTowerMenu(): void {
+    let tileSprite: Sprite = sprites.create(assets.image`whiteBackground`, SpriteKind.Unused)
     tileSprite.setFlag(SpriteFlag.RelativeToCamera, true)
     let towerObject: Sprite = sprites.create(assets.image`testTower`, SpriteKind.MenuTower)
-    towerObject.setFlag(SpriteFlag.RelativeToCamera, true)
-    tileSprite.setPosition(scene.screenWidth() / 2 , scene.screenHeight() - (tileSprite.image.height / 2))
-    towerObject.setPosition(tileSprite.x, tileSprite.y)
+    tileSprite.setPosition(scene.screenWidth() / 2, scene.screenHeight() - (tileSprite.image.height / 2))
+    forever(function (): void {
+        towerObject.setPosition(tileSprite.x + scene.cameraProperty(CameraProperty.Left), tileSprite.y + scene.cameraProperty(CameraProperty.Top))
+    })
 }
 
 function createCursor() : void {
