@@ -2,16 +2,22 @@ namespace SpriteKind {
     export const Cursor = SpriteKind.create()
     export const Unused = SpriteKind.create()
     export const MenuTower = SpriteKind.create()
+    export const MenuFrame = SpriteKind.create()
     export const Indicator = SpriteKind.create()
     export const Tower = SpriteKind.create()
 }
 namespace OverlapEvents {
     sprites.onOverlap(SpriteKind.Cursor, SpriteKind.MenuTower, function (sprite: Sprite, otherSprite: Sprite): void {
         let currentTowerSprite: Sprite = sprites.readDataSprite(sprite, "currentTower")
-        if (browserEvents.MouseLeft.isPressed() && !currentTowerSprite) {
-            let towerSprite: Sprite = sprites.create(otherSprite.image, SpriteKind.Player)
-            sprites.setDataSprite(sprite, "currentTower", towerSprite)
+        let towerIndex: number = Tower.towerMenuSprites.indexOf(otherSprite)
+        currentTowerObject = towerObjects[towerIndex]
 
+        if (currentTowerSprite || !currentTowerObject) {
+            return
+        }
+        if (browserEvents.MouseLeft.isPressed() && !currentTowerSprite) {
+            let towerSprite: Sprite = currentTowerObject.createTowerSprite()
+            sprites.setDataSprite(sprite, "currentTower", towerSprite)
         }
     })
 }
