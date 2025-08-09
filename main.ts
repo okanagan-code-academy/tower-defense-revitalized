@@ -31,7 +31,7 @@ function onStart() : void {
 }
 
 function createTowerMenu(): void {
-    let tileSprite: Sprite = sprites.create(assets.image`whiteBackground`, SpriteKind.Unused)
+    let tileSprite: Sprite =sprites.create(assets.image`whiteBackground`, SpriteKind.Unused)
     tileSprite.setFlag(SpriteFlag.RelativeToCamera, true)
     let towerObject: Sprite = sprites.create(assets.image`testTower`, SpriteKind.MenuTower)
     tileSprite.setPosition(scene.screenWidth() / 2, scene.screenHeight() - (tileSprite.image.height / 2))

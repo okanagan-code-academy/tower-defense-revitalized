@@ -89,47 +89,92 @@ namespace SpriteSheet {
         sprites.projectile.explosion3,
         sprites.projectile.explosion4,
     ]
+    export const projectileTurret: Image =assets.image`projetileTurret`
+
+    export const bullets: Image[] = [
+            assets.image`bullet`,
+            assets.image`bullet1`,
+            assets.image`bullet2`,
+            assets.image`bullet3`,
+
+        ]
+    export const towerBases: Image[] = [
+            assets.image`base1`,
+            assets.image`base2`,
+            assets.image`base3`,
+            assets.image`base4`,
+            assets.image`base5`,
+        ]
 }
 
 
 class Turret {
-    image: Image
+    turretImage: Image
     spriteKind: number = SpriteKind.Unused
-    parent: Sprite
+    baseSprite: Sprite
     sightRange: number
+    cost: number
 
 
-    constructor(image: Image, parent: Sprite, range: number) {
-        this.image = image
-        this.parent = parent
+    constructor(image: Image, baseSprite: Sprite, range: number, cost: number) {
+        this.turretImage = image
+        this.baseSprite = baseSprite
         this.sightRange = range
+        this.cost = cost
     }
-    createSprite(): Sprite {
+    createSprite(position: Vector2): Sprite {
         return null
     }
 }
 
 class ProjectileTurret extends Turret {
-    projectileImage: Image
+    projectile: Projectile 
     speed: number
     fireRate: number
     magazineCapacity: number
     reloadDuration: number
 
-    constructor(image: Image, parent: Sprite, projectileImage: Image, speed: number, fireRate: number, magazineCapacity: number, reloadDuration: number, range: number) {
-        super(image, parent, range)
-        this.projectileImage = projectileImage
+    constructor(speed: number, fireRate: number, magazineCapacity: number, reloadDuration: number) {
+        const image: Image = SpriteSheet.projectileTurret
+        const range: number = 100
+        const cost: number = 25
+        const projectile: Projectile = new Projectile(SpriteSheet.bullets._pickRandom(), 0, 2)
+        const baseSprite: Sprite = sprites.create(SpriteSheet.towerBases._pickRandom(), SpriteKind.Unused)
+
+        super(image, baseSprite, range, cost)
+        this.projectile = projectile
         this.speed = speed
         this.fireRate = fireRate
         this.magazineCapacity = magazineCapacity
         this.reloadDuration = reloadDuration
 
     }
-    createSprite(): Sprite {
-        let sprite: Sprite = sprites.create(this.image, this.spriteKind)
-
-
-        return sprite
+    createSprite(position: Vector2): Sprite {
+        let turretSprite: Sprite = sprites.create(this.turretImage, this.spriteKind)
+        let currentTarget: Sprite = null
+        sprites.setDataSprite(turretSprite, "baseSprite", this.baseSprite)
+        forever(function() : void {
+            let nearbyTargets: Sprite[] = spriteutils.getSpritesWithin(SpriteKind.Enemy, this.sightRange, turretSprite)
+            currentTarget = nearbyTargets[0]
+            if(currentTarget) {
+                transformSprites.rotateSprite(turretSprite, Math.lerpAngle(transformSprites.getRotation(turretSprite), spriteutils.angleFrom(turretSprite, currentTarget), 1 - Math.exp(-game.getDeltaTime())))
+            }
+        })
+        let remainingAmmo: number = this.magazineCapacity
+        
+        forever(function(): void {
+            if(remainingAmmo <= 0){
+                remainingAmmo = this.magazineCapacity
+                pause(this.reloadDuration)
+                return
+            }
+            if(currentTarget){
+                this.projectile.shootProjectile(turretSprite, spriteutils.angleFrom(turretSprite, currentTarget), this.speed)
+                remainingAmmo -= 1
+                pause(this.fireRate)
+            }
+        })
+        return turretSprite
     }
 
 }
@@ -137,15 +182,19 @@ class ProjectileTurret extends Turret {
 class Projectile {
     image: Image
     health: number
+    damage: number
+    size: number
 
-    constructor(image: Image, health: number = 0) {
+    constructor(image: Image, health: number = 0, damage: number) {
         this.image = image
         this.health = health
+        this.damage = damage
     }
 
     shootProjectile(sprite: Sprite, angle: number, speed: number): Sprite {
         let projectile: Sprite = sprites.create(this.image, SpriteKind.Projectile)
         sprites.setDataNumber(projectile, "health", this.health)
+        sprites.setDataNumber(projectile, "damage", this.damage)
         projectile.setPosition(sprite.x, sprite.y)
         spriteutils.setVelocityAtAngle(projectile, angle, speed)
         return projectile
@@ -153,7 +202,6 @@ class Projectile {
 }
 
 class ExplosiveProjectile extends Projectile {
-    size: number = 4
 
     shootProjectile(sprite: Sprite, angle: number, speed: number): Sprite {
         let projectile: Sprite = super.shootProjectile(sprite, angle, speed)
