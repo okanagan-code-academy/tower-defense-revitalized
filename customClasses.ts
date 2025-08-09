@@ -105,43 +105,94 @@ namespace SpriteSheet {
             assets.image`base4`,
             assets.image`base5`,
         ]
+    export const towerMenuFrame: Image =assets.image`towerMenuFrame`
 }
 
 
-class Turret {
-    turretImage: Image
-    spriteKind: number = SpriteKind.Unused
-    baseSprite: Sprite
-    sightRange: number
+class Tower {
+    menuImage: Image
+    turretObject: Turret
     cost: number
+    static towerMenuSprites: Sprite[] = []
+    static tileFrameSprites: Sprite[] = []
 
-
-    constructor(image: Image, baseSprite: Sprite, range: number, cost: number) {
-        this.turretImage = image
-        this.baseSprite = baseSprite
-        this.sightRange = range
+    constructor(image: Image, turret: Turret, cost: number) {
+        this.menuImage = image
+        this.turretObject = turret
         this.cost = cost
     }
-    createSprite(position: Vector2): Sprite {
+
+    createMenuSprite(): void {
+        let tileSprite: Sprite = sprites.create(SpriteSheet.towerMenuFrame, SpriteKind.MenuFrame)
+        Tower.tileFrameSprites.push(tileSprite)
+        tileSprite.setFlag(SpriteFlag.RelativeToCamera, true)
+        let menuTowerSprite: Sprite = sprites.create(this.menuImage, SpriteKind.MenuTower)
+        Tower.towerMenuSprites.push(menuTowerSprite)
+        let totalTowers: number = Tower.towerMenuSprites.length
+        let startingPositionX: number = (scene.screenWidth() / 2)
+        if (totalTowers > 1) {
+            startingPositionX = (scene.screenWidth() / 2) - ((totalTowers * SpriteSheet.towerMenuFrame.width) / 2)
+        }
+        let index: number = 0
+        for (let tile of Tower.tileFrameSprites) {
+            tile.setPosition(startingPositionX + index * tile.image.width, scene.screenHeight() - (tile.image.height / 2))
+        }
+
+        forever(function (): void {
+            menuTowerSprite.setPosition(tileSprite.x + scene.cameraProperty(CameraProperty.Left), tileSprite.y + scene.cameraProperty(CameraProperty.Top))
+        })
+    }
+    createTowerSprite(): Sprite {
+        let towerSprite: Sprite = sprites.create(this.menuImage, SpriteKind.Unused)
+        return towerSprite
+    }
+    createTurretSprite(parentSprite: Sprite): Sprite {
+        let turretSprite: Sprite = this.turretObject.createSprite(parentSprite)
+        return turretSprite
+    }
+
+}
+class ProjectileTower extends Tower {
+    constructor() {
+        const image: Image = SpriteSheet.towerBases[0]
+        const projectileTurret = new ProjectileTurret()
+        const cost: number = 25
+        super(image, projectileTurret, cost)
+    }
+}
+
+class Turret {
+    image: Image
+    spriteKind: number = SpriteKind.Unused
+    sightRange: number
+
+
+    constructor(image: Image, range: number) {
+        this.image = image
+        this.sightRange = range
+    }
+    createSprite(towerSprite: Sprite): Sprite {
         return null
     }
 }
 
 class ProjectileTurret extends Turret {
-    projectile: Projectile 
+    projectile: Projectile
     speed: number
     fireRate: number
     magazineCapacity: number
     reloadDuration: number
 
-    constructor(speed: number, fireRate: number, magazineCapacity: number, reloadDuration: number) {
+    constructor() {
         const image: Image = SpriteSheet.projectileTurret
         const range: number = 100
-        const cost: number = 25
         const projectile: Projectile = new Projectile(SpriteSheet.bullets._pickRandom(), 0, 2)
-        const baseSprite: Sprite = sprites.create(SpriteSheet.towerBases._pickRandom(), SpriteKind.Unused)
+        const speed: number = 50
+        const fireRate: number = 250
+        const magazineCapacity: number = 10
+        const reloadDuration: number = 500
 
-        super(image, baseSprite, range, cost)
+        super(image, range)
         this.projectile = projectile
         this.speed = speed
         this.fireRate = fireRate
@@ -149,26 +200,27 @@ class ProjectileTurret extends Turret {
         this.reloadDuration = reloadDuration
 
     }
-    createSprite(position: Vector2): Sprite {
-        let turretSprite: Sprite = sprites.create(this.turretImage, this.spriteKind)
+    createSprite(parentSprite: Sprite): Sprite {
+        let turretSprite: Sprite = sprites.create(this.image, this.spriteKind)
         let currentTarget: Sprite = null
-        sprites.setDataSprite(turretSprite, "baseSprite", this.baseSprite)
-        forever(function() : void {
+        sprites.setDataSprite(turretSprite, "parentSprite", parentSprite)
+        forever(function (): void {
+            // turretSprite.setPosition(parentSprite.x, parentSprite.y)
             let nearbyTargets: Sprite[] = spriteutils.getSpritesWithin(SpriteKind.Enemy, this.sightRange, turretSprite)
             currentTarget = nearbyTargets[0]
-            if(currentTarget) {
+            if (currentTarget) {
                 transformSprites.rotateSprite(turretSprite, Math.lerpAngle(transformSprites.getRotation(turretSprite), spriteutils.angleFrom(turretSprite, currentTarget), 1 - Math.exp(-game.getDeltaTime())))
             }
         })
         let remainingAmmo: number = this.magazineCapacity
-        
-        forever(function(): void {
-            if(remainingAmmo <= 0){
+
+        forever(function (): void {
+            if (remainingAmmo <= 0) {
                 remainingAmmo = this.magazineCapacity
                 pause(this.reloadDuration)
                 return
             }
-            if(currentTarget){
+            if (currentTarget) {
                 this.projectile.shootProjectile(turretSprite, spriteutils.angleFrom(turretSprite, currentTarget), this.speed)
                 remainingAmmo -= 1
                 pause(this.fireRate)
