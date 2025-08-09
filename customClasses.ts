@@ -143,7 +143,9 @@ class Tower {
         })
     }
     createTowerSprite(): Sprite {
-        let towerSprite: Sprite = sprites.create(this.menuImage, SpriteKind.Unused)
+        let towerSprite: Sprite = sprites.create(this.menuImage, SpriteKind.PsuedoTower)
+        sprites.setDataNumber(towerSprite, "cost", this.cost)
+        info.changeScoreBy((-1)*this.cost)
         return towerSprite
     }
     createTurretSprite(parentSprite: Sprite): Sprite {
@@ -154,7 +156,7 @@ class Tower {
 }
 class ProjectileTower extends Tower {
     constructor() {
-        const image: Image = SpriteSheet.towerBases[0]
+        const image: Image = SpriteSheet.towerBases[1]
         const projectileTurret = new ProjectileTurret()
         const cost: number = 25
         super(image, projectileTurret, cost)
@@ -185,12 +187,12 @@ class ProjectileTurret extends Turret {
 
     constructor() {
         const image: Image = SpriteSheet.projectileTurret
-        const range: number = 100
+        const range: number = 50
         const projectile: Projectile = new Projectile(SpriteSheet.bullets._pickRandom(), 0, 2)
-        const speed: number = 50
-        const fireRate: number = 250
-        const magazineCapacity: number = 10
-        const reloadDuration: number = 500
+        const speed: number = 100
+        const fireRate: number = 50
+        const magazineCapacity: number = 25
+        const reloadDuration: number = 1000
 
         super(image, range)
         this.projectile = projectile
@@ -202,6 +204,7 @@ class ProjectileTurret extends Turret {
     }
     createSprite(parentSprite: Sprite): Sprite {
         let turretSprite: Sprite = sprites.create(this.image, this.spriteKind)
+        turretSprite.setPosition(parentSprite.x, parentSprite.y)
         let currentTarget: Sprite = null
         sprites.setDataSprite(turretSprite, "parentSprite", parentSprite)
         forever(function (): void {
@@ -209,7 +212,7 @@ class ProjectileTurret extends Turret {
             let nearbyTargets: Sprite[] = spriteutils.getSpritesWithin(SpriteKind.Enemy, this.sightRange, turretSprite)
             currentTarget = nearbyTargets[0]
             if (currentTarget) {
-                transformSprites.rotateSprite(turretSprite, Math.lerpAngle(transformSprites.getRotation(turretSprite), spriteutils.angleFrom(turretSprite, currentTarget), 1 - Math.exp(-game.getDeltaTime())))
+                transformSprites.rotateSprite(turretSprite, spriteutils.radiansToDegrees(Math.lerpAngle(transformSprites.getRotation(turretSprite), spriteutils.angleFrom(turretSprite, currentTarget), 1 - Math.exp(-game.getDeltaTime()))))
             }
         })
         let remainingAmmo: number = this.magazineCapacity
@@ -218,9 +221,7 @@ class ProjectileTurret extends Turret {
             if (remainingAmmo <= 0) {
                 remainingAmmo = this.magazineCapacity
                 pause(this.reloadDuration)
-                return
-            }
-            if (currentTarget) {
+            } else if (currentTarget) {
                 this.projectile.shootProjectile(turretSprite, spriteutils.angleFrom(turretSprite, currentTarget), this.speed)
                 remainingAmmo -= 1
                 pause(this.fireRate)
@@ -244,10 +245,12 @@ class Projectile {
     }
 
     shootProjectile(sprite: Sprite, angle: number, speed: number): Sprite {
+        const offset: number = 5
         let projectile: Sprite = sprites.create(this.image, SpriteKind.Projectile)
+        projectile.setFlag(SpriteFlag.GhostThroughWalls, true)
         sprites.setDataNumber(projectile, "health", this.health)
         sprites.setDataNumber(projectile, "damage", this.damage)
-        projectile.setPosition(sprite.x, sprite.y)
+        spriteutils.placeAngleFrom(projectile, angle, offset, sprite)
         spriteutils.setVelocityAtAngle(projectile, angle, speed)
         return projectile
     }

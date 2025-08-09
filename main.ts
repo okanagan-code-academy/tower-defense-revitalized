@@ -5,6 +5,7 @@ namespace SpriteKind {
     export const MenuFrame = SpriteKind.create()
     export const Indicator = SpriteKind.create()
     export const Tower = SpriteKind.create()
+    export const PsuedoTower = SpriteKind.create()
 }
 namespace OverlapEvents {
     sprites.onOverlap(SpriteKind.Cursor, SpriteKind.MenuTower, function (sprite: Sprite, otherSprite: Sprite): void {
@@ -15,10 +16,31 @@ namespace OverlapEvents {
         if (currentTowerSprite || !currentTowerObject) {
             return
         }
-        if (browserEvents.MouseLeft.isPressed() && !currentTowerSprite) {
+        if (browserEvents.MouseLeft.isPressed() && !currentTowerSprite && info.score() >= currentTowerObject.cost) {
             let towerSprite: Sprite = currentTowerObject.createTowerSprite()
             sprites.setDataSprite(sprite, "currentTower", towerSprite)
         }
+    })
+    sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite: Sprite, otherSprite: Sprite) : void {
+        sprite.destroy()
+        let damage: number = sprites.readDataNumber(sprite, "damage")
+        updateHealthBar(otherSprite, damage)
+        
+    })
+
+    export function updateHealthBar(sprite: Sprite, amount: number = 1) : void {
+        let healthBar: StatusBarSprite = statusbars.getStatusBarAttachedTo(StatusBarKind.Health, sprite)
+        healthBar.value -= amount
+        if(healthBar.value <= 0){
+            sprite.destroy()
+        }
+    }
+}
+
+namespace OnDestroyedEvents {
+    sprites.onDestroyed(SpriteKind.Tower, function(sprite: Sprite) : void {
+        let cost: number = sprites.readDataNumber(sprite, "cost")
+        info.changeScoreBy(cost)
     })
 }
 
@@ -35,6 +57,7 @@ let towerObjects: Tower[] = [
 onStart()
 
 function onStart() : void {
+    info.setScore(1000)
     createCursor()
     createLevel()
     createTowerMenu()
@@ -82,16 +105,16 @@ function createCursor(): void {
         } else if (isValidTile) {
             tiles.placeOnTile(towerSprite, cursorSprite.tilemapLocation())
             towerSprite.setKind(SpriteKind.Tower)
-            timer.after(500, function (): void {
-                currentTowerObject.createTurretSprite(towerSprite)
-                currentTowerObject = null
-            })
+            currentTowerObject.createTurretSprite(towerSprite)
+            currentTowerObject = null
             sprites.setDataSprite(cursorSprite, "currentTower", null)
         } else {
             towerSprite.destroy(effects.fire, 250)
         }
     })
 }
+
+
 
 function validTileCheck(): boolean {
     let currentTileIndicatorSprite: Sprite = sprites.readDataSprite(cursorSprite, "currentTileIndicator")
