@@ -27,6 +27,10 @@ let currentMapPath: tiles.Location[]
 let isValidTile: boolean = false
 let enemyPath: tiles.Location[] = null
 let waveStart: boolean = true
+let currentTowerObject: Tower = null
+let towerObjects: Tower[] = [
+    new ProjectileTower(),
+]
 
 onStart()
 
@@ -37,13 +41,16 @@ function onStart() : void {
 }
 
 function createTowerMenu(): void {
-    let tileSprite: Sprite =sprites.create(assets.image`whiteBackground`, SpriteKind.Unused)
-    tileSprite.setFlag(SpriteFlag.RelativeToCamera, true)
-    let towerObject: Sprite = sprites.create(assets.image`testTower`, SpriteKind.MenuTower)
-    tileSprite.setPosition(scene.screenWidth() / 2, scene.screenHeight() - (tileSprite.image.height / 2))
-    forever(function (): void {
-        towerObject.setPosition(tileSprite.x + scene.cameraProperty(CameraProperty.Left), tileSprite.y + scene.cameraProperty(CameraProperty.Top))
-    })
+    // let tileSprite: Sprite =sprites.create(assets.image`whiteBackground`, SpriteKind.Unused)
+    // tileSprite.setFlag(SpriteFlag.RelativeToCamera, true)
+    // let towerObject: Sprite = sprites.create(assets.image`testTower`, SpriteKind.MenuTower)
+    // tileSprite.setPosition(scene.screenWidth() / 2, scene.screenHeight() - (tileSprite.image.height / 2))
+    // forever(function (): void {
+    //     towerObject.setPosition(tileSprite.x + scene.cameraProperty(CameraProperty.Left), tileSprite.y + scene.cameraProperty(CameraProperty.Top))
+    // })
+    for (let tower of towerObjects) {
+        tower.createMenuSprite()
+    }
 }
 
 function createCursor(): void {
@@ -75,6 +82,10 @@ function createCursor(): void {
         } else if (isValidTile) {
             tiles.placeOnTile(towerSprite, cursorSprite.tilemapLocation())
             towerSprite.setKind(SpriteKind.Tower)
+            timer.after(500, function (): void {
+                currentTowerObject.createTurretSprite(towerSprite)
+                currentTowerObject = null
+            })
             sprites.setDataSprite(cursorSprite, "currentTower", null)
         } else {
             towerSprite.destroy(effects.fire, 250)
